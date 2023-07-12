@@ -136,6 +136,7 @@ bool 动作-松开植物()
 	if 主角.抓握的植物节点 == null { return false; }
 	if 主角抓握的植物不插在土里 { return false; }
 	主角.抓握的植物节点 = null;
+	动作-下落();
 	return true;
 }
 
