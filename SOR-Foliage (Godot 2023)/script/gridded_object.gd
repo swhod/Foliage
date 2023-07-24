@@ -20,10 +20,6 @@ var _movable := true
 var _permitted := []
 
 # (private)
-# The array of objects bound with this object when moving.
-var _bound := [self]
-
-# (private)
 # The input mapper for bodypack data.
 func _input_mapper(pair):
 	if pair[KEY] in self._permitted:
@@ -53,6 +49,11 @@ func _init(bodypack = {}, init_movable := true, init_permitted := []):
 func is_movable() -> bool:
 	return self._movable
 
+# (read-only)
+## Returns an array of all objects bound with this object when moving.
+func get_bound() -> Array:
+	return self._bound
+
 # (writing)
 ## Set movability to given state.
 func set_movable(movable := true):
@@ -60,7 +61,7 @@ func set_movable(movable := true):
 
 # (writing)
 ## Move this object by given displacement.
-func do_displace(displacement := Vector2i.ZERO):
+func do_move(displacement := Vector2i.ZERO):
 	if self._movable:
 		self._position += displacement
 
@@ -73,21 +74,3 @@ func add_body(bodypack = {}):
 ## Delete given bodies.
 func delete_body(bodypack = {}):
 	self.delete_pack(bodypack)
-
-# (writing)
-## Add a bound object.
-func add_bound(obj: GriddedObject):
-	if obj not in self._bound:
-		self._bound.append(obj)
-
-# (writing)
-## Delete a bound object.
-func delete_bound(obj: GriddedObject):
-	self._bound.erase(obj)
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# (writing)
-## Attempt to move if can.
-func attempt_move(displacement := Vector2i.ZERO):
-	pass
