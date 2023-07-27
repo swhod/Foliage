@@ -36,7 +36,7 @@ func _output_mapper(pair):
 # The constructor of this class when instantiating.
 func _init(bodypack = {}, init_movable := true, init_permitted := []):
 	self._permitted = init_permitted if init_permitted else \
-			KeyValuePack.new(bodypack).to_dipack().keys()
+			KeyValuePack.pack_to_dict(bodypack).keys()
 	self._permitted.make_read_only()
 	self._movable = init_movable
 	self._position = Vector2.ZERO
@@ -64,13 +64,3 @@ func set_movable(movable := true):
 func do_move(displacement := Vector2.ZERO):
 	if self._movable:
 		self._position += displacement
-
-# (writing)
-## Add given bodies.
-func add_body(bodypack = {}):
-	self.add_pack(bodypack)
-
-# (writing)
-## Delete given bodies.
-func delete_body(bodypack = {}):
-	self.delete_pack(bodypack)

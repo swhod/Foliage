@@ -29,7 +29,7 @@ const KEY = 0
 const VALUE = 1
 
 enum PackType {
-	KVPAIR, ## An array containing exactly two non-container elements.
+	KVPAIR, ## An array containing exactly a key and a non-container value.
 	ARPACK, ## An array containing key-value pairs.
 	DIPACK, ## A dictionary putting together values of the same key.
 	KVPACK, ## An instance of this class.
@@ -68,24 +68,17 @@ func _init(from = {},
 	self._redundant = init_redundant
 	self._output_map = init_output_map
 	self._input_map = init_input_map
-	self._stored_pack = KeyValuePack._pack_to_pack(from, PackType.DIPACK, init_redundant)
+	self._stored_pack = KeyValuePack.pack_to_dict(from, init_redundant)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # (read-only)
 ## Returns [code]true[/code] if all pairs given by [param pack] exist.
 func has_pack(pack) -> bool:
-	return KeyValuePack._pack_iterator(pack, func(kvpair): return KeyValuePack._pack_has_kvpair(self, kvpair))
-
-# (read-only)
-## Returns a new dictionary pack converted from this pack.
-func to_dipack() -> Dictionary:
-	return KeyValuePack._pack_to_pack(self, PackType.DIPACK, self._redundant)
-
-# (read-only)
-## Returns a new array pack converted from this pack.
-func to_arpack() -> Array:
-	return KeyValuePack._pack_to_pack(self, PackType.ARPACK, self._redundant)
+	return KeyValuePack.pack_iterator(pack,
+			func(kvpair): return KeyValuePack._dict_has_kvpair(self._stored_pack, kvpair),
+			true,
+			func(r, iter_r): return r if iter_r else false)
 
 # (writing)
 ## Set the value-mapping method that always called when inputting.
@@ -105,12 +98,12 @@ func set_redundant(redundant) -> void:
 # (writing)
 ## Add pairs given by [param pack].
 func add_pack(pack) -> void:
-	KeyValuePack._pack_iterator(pack, func(kvpair): KeyValuePack._pack_add_kvpair(self, kvpair, self._redundant))
+	KeyValuePack.pack_iterator(pack, func(kvpair): KeyValuePack._dict_add_kvpair(self._stored_pack, kvpair, self._redundant))
 
 # (writing)
 ## Delete pairs given by [param pack].
 func delete_pack(pack) -> void:
-	KeyValuePack._pack_iterator(pack, func(kvpair): KeyValuePack._pack_delete_kvpair(self, kvpair))
+	KeyValuePack.pack_iterator(pack, func(kvpair): KeyValuePack._dict_delete_kvpair(self._stored_pack, kvpair))
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -129,7 +122,7 @@ var _iter_return: Array
 func _iter_continue() -> bool:
 	while self._iter_x < self._iter_keys.size():
 		self._iter_k = self._iter_keys[self._iter_x]
-		self._iter_keystate = KeyValuePack._pack_get_keystate(self, self._iter_k)
+		self._iter_keystate = KeyValuePack._dict_get_keystate(self._stored_pack, self._iter_k)
 		if self._iter_keystate != KeyState.HAS_EMPTY: break
 		self._iter_x += 1
 	return self._iter_x < self._iter_keys.size()
@@ -171,32 +164,29 @@ func _iter_get(_arg) -> Array:
 # (static)
 # Returns true if the variant is a dictionary or an array.
 static func _variant_is_container(v) -> bool:
-	match typeof(v):
-		TYPE_ARRAY, TYPE_DICTIONARY: return true
-		_: return false
+	return true if v is Array or v is Dictionary else false
 
 # (static)
 # Returns true if the pack is a key-value pair.
 static func _pack_is_kvpair(pack) -> bool:
-	if typeof(pack) != TYPE_ARRAY: return false
+	if not pack is Array: return false
 	if pack.size() != 2: return false
-	return not _variant_is_container(pack[KEY]) and \
-			not _variant_is_container(pack[VALUE])
+	return not _variant_is_container(pack[VALUE])
 
 # (static)
 # Returns true if the pack is a valid array pack.
 static func _pack_is_arpack(pack) -> bool:
-	if typeof(pack) != TYPE_ARRAY: return false
+	if not pack is Array: return false
 	return pack.all(func(e): return _pack_is_kvpair(e))
 
 # (static)
 # Returns true if the pack is a valid dictionary pack.
 static func _pack_is_dipack(pack) -> bool:
-	if typeof(pack) != TYPE_DICTIONARY: return false
+	if not pack is Dictionary: return false
 	for k in pack:
-		if not _variant_is_container(pack[k]): continue
-		if typeof(pack[k]) == TYPE_DICTIONARY: return false
-		if pack[k].any(func(e): return _variant_is_container(e)): return false
+		if pack[k] is Dictionary: return false
+		if pack[k] is Array:
+			if pack[k].any(func(e): return _variant_is_container(e)): return false
 	return true
 
 # (static)
@@ -213,105 +203,81 @@ static func _pack_get_packtype(pack) -> int:
 	if _pack_is_kvpack(pack): return PackType.KVPACK
 	return PackType.INVALID
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 # (static)
-# Returns the state in KeyValuePack.KeyState of given key in given pack.
-static func _pack_get_keystate(pack, key) -> int:
-	if _variant_is_container(key): return KeyState.INVALID
-	match _pack_get_packtype(pack):
-		PackType.KVPAIR:
-			return KeyState.HAS_EMPTY if pack[KEY] != key or pack[VALUE] == null else \
-					 KeyState.HAS_VALUE
-		PackType.ARPACK:
-			return KeyState.HAS_EMPTY if pack.all(func(kvpair): return kvpair[KEY] != key) else \
-					KeyState.HAS_VALUE
-		PackType.DIPACK:
-			return KeyState.HAS_EMPTY if not pack.has(key) else \
-					KeyState.HAS_VALUE if typeof(pack[key]) != TYPE_ARRAY else \
-					KeyState.HAS_EMPTY if pack[key].is_empty() else \
-					KeyState.HAS_ARRAY
-		PackType.KVPACK:
-			return _pack_get_keystate(pack._stored_pack, key)
-		_: 
-			return KeyState.INVALID
+# Returns the state in KeyValuePack.KeyState of given key in given dictionary.
+static func _dict_get_keystate(dict: Dictionary, key) -> int:
+	return KeyState.HAS_EMPTY if not dict.has(key) else \
+			KeyState.INVALID if dict[key] is Dictionary else \
+			KeyState.HAS_VALUE if not dict[key] is Array else \
+			KeyState.HAS_EMPTY if dict[key].is_empty() else \
+			KeyState.HAS_ARRAY
+
+# (static)
+# Returns true if the given dictionary has given key-value pair.
+static func _dict_has_kvpair(dict: Dictionary, kvpair) -> bool:
+	if not _pack_is_kvpair(kvpair): return false
+	match _dict_get_keystate(dict, kvpair[KEY]):
+		KeyState.HAS_VALUE: return dict[kvpair[KEY]] == kvpair[VALUE]
+		KeyState.HAS_ARRAY: return dict[kvpair[KEY]].has(kvpair[VALUE])
+		_: return false
+
+# (static)
+# Add the data from given key-value pair to given dictionary.
+# When redundant is false, ignore the pair if it already exists.
+static func _dict_add_kvpair(dict: Dictionary, kvpair, redundant := false) -> void:
+	if not _pack_is_kvpair(kvpair): return
+	if _dict_has_kvpair(dict, kvpair) and not redundant: return
+	match _dict_get_keystate(dict, kvpair[KEY]):
+		KeyState.HAS_EMPTY: dict[kvpair[KEY]] = kvpair[VALUE]
+		KeyState.HAS_VALUE: dict[kvpair[KEY]] = [dict[kvpair[KEY]], kvpair[VALUE]]
+		KeyState.HAS_ARRAY: dict[kvpair[KEY]].append(kvpair[VALUE])
+
+# (static)
+# Delete certain key-value pair in given dictionary.
+static func _dict_delete_kvpair(dict: Dictionary, kvpair) -> void:
+	if not _pack_is_kvpair(kvpair): return
+	if not _dict_has_kvpair(dict, kvpair): return
+	match _dict_get_keystate(dict, kvpair[KEY]):
+		KeyState.HAS_VALUE: dict.erase(kvpair[KEY])
+		KeyState.HAS_ARRAY: dict[kvpair[KEY]].erase(kvpair[VALUE])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # (static)
-# Call the method for all key-value pairs read from given pack.
-static func _pack_iterator(pack,
-		method_on_pair: Callable,
-		method_on_return: Callable = func(all, r): return all if r else r,
-		init_return = true):
-	var pack_return = init_return
+## Call [param method] for every pair in [param pack].
+## [br]The default returning logic is equivalent to "any", which is to return [code]true[/code]
+## if any [code]true[/code] is returned during iteration, else [code]false[/code]:
+## [codeblock]
+## init_r = false
+## next_r = func(r, iter_r): return true if iter_r else r
+## [/codeblock]
+## [br]To adjust the logic, assign [param init_r] as starting value, and
+## [param next_r] as the method to deal with values returned during iteration.
+static func pack_iterator(pack, 
+		method: Callable,
+		init_r = false,
+		next_r: Callable = func(r, iter_r): return true if iter_r else r):
+	var r = init_r
 	match _pack_get_packtype(pack):
 		PackType.KVPAIR:
-			pack_return = method_on_return.call(pack_return, method_on_pair.call(pack.duplicate()))
+			r = next_r.call(r, method.call(pack.duplicate()))
 		PackType.ARPACK, PackType.KVPACK:
 			for pair in pack:
-				pack_return = method_on_return.call(pack_return, method_on_pair.call(pair))
+				r = next_r.call(r, method.call(pair))
 		PackType.DIPACK:
 			for k in pack:
 				if _variant_is_container(pack[k]):
 					for v in pack[k]:
-						pack_return = method_on_return.call(pack_return, method_on_pair.call([k, v]))
+						r = next_r.call(r, method.call([k, v]))
 				else:
-					pack_return = method_on_return.call(pack_return, method_on_pair.call([k, pack[k]]))
-	return pack_return
+					r = next_r.call(r, method.call([k, pack[k]]))
+	return r
 
 # (static)
-# Returns true if the given pack has given key-value pair.
-static func _pack_has_kvpair(pack, kvpair) -> bool:
-	if not _pack_is_kvpair(kvpair): return false
-	match _pack_get_packtype(pack):
-		PackType.KVPAIR: return pack == kvpair
-		PackType.ARPACK: return pack.has(kvpair)
-		PackType.DIPACK:
-			match _pack_get_keystate(pack, kvpair[KEY]):
-				KeyState.HAS_EMPTY: return false
-				KeyState.HAS_VALUE: return pack[kvpair[KEY]] == kvpair[VALUE]
-				KeyState.HAS_ARRAY: return pack[kvpair[KEY]].has(kvpair[VALUE])
-		PackType.KVPACK: return _pack_has_kvpair(pack._stored_pack, kvpair)
-	return false
-
-# (static)
-# Add the data from given key-value pair to given pack.
-# When redundant is false, ignore the pair if it already exists.
-static func _pack_add_kvpair(pack, kvpair, redundant := false) -> void:
-	if not _pack_is_kvpair(kvpair): return
-	if _pack_has_kvpair(pack, kvpair) and not redundant: return
-	match _pack_get_packtype(pack):
-		PackType.KVPAIR: pack.assign(kvpair)
-		PackType.ARPACK: pack.append([kvpair[KEY], kvpair[VALUE]])
-		PackType.DIPACK:
-			match _pack_get_keystate(pack, kvpair[KEY]):
-				KeyState.HAS_EMPTY: pack[kvpair[KEY]] = kvpair[VALUE]
-				KeyState.HAS_VALUE: pack[kvpair[KEY]] = [pack[kvpair[KEY]], kvpair[VALUE]]
-				KeyState.HAS_ARRAY: pack[kvpair[KEY]].append(kvpair[VALUE])
-		PackType.KVPACK: _pack_add_kvpair(pack._stored_pack, pack._input_map.call(kvpair), redundant)
-
-# (static)
-# Delete certain key-value pair in given pack.
-static func _pack_delete_kvpair(pack, kvpair) -> void:
-	if not _pack_is_kvpair(kvpair): return
-	if not _pack_has_kvpair(pack, kvpair): return
-	match _pack_get_packtype(pack):
-		PackType.KVPAIR: pack.fill(null)
-		PackType.ARPACK: pack.erase(kvpair)
-		PackType.DIPACK:
-			match _pack_get_keystate(pack, kvpair[KEY]):
-				KeyState.HAS_EMPTY: pass
-				KeyState.HAS_VALUE: pack.erase(kvpair[KEY])
-				KeyState.HAS_ARRAY: pack[kvpair[KEY]].erase(kvpair[VALUE])
-		PackType.KVPACK: _pack_delete_kvpair(pack._stored_pack, pack._input_map.call(kvpair))
-
-# (static)
-# Returns a new pack in given packtype converted from given pack.
-static func _pack_to_pack(pack, packtype := PackType.KVPACK, redundant := false):
-	var new_pack
-	match packtype:
-		PackType.KVPAIR: new_pack = [null, null]
-		PackType.ARPACK: new_pack = []
-		PackType.DIPACK: new_pack = {}
-		PackType.KVPACK: new_pack = KeyValuePack.new()
-	_pack_iterator(pack, func(kvpair): _pack_add_kvpair(new_pack, kvpair, redundant))
-	return new_pack
+## Returns a new dictionary converted from given [param pack].
+static func pack_to_dict(pack, redundant := false) -> Dictionary:
+	var dict := {}
+	pack_iterator(pack, func(kvpair): _dict_add_kvpair(dict, kvpair, redundant))
+	return dict
