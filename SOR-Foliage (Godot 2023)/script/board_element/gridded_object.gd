@@ -9,7 +9,7 @@ extends KeyValuePack
 
 # (private)
 # The vector that indicates the position.
-var _position := Vector2i.ZERO
+var _position := Vector2.ZERO
 
 # (private)
 # The bool value of permission to move this object.
@@ -36,10 +36,10 @@ func _output_mapper(pair):
 # The constructor of this class when instantiating.
 func _init(bodypack = {}, init_movable := true, init_permitted := []):
 	self._permitted = init_permitted if init_permitted else \
-			KeyValuePack.new(bodypack).to_dict().keys()
+			KeyValuePack.new(bodypack).to_dipack().keys()
 	self._permitted.make_read_only()
 	self._movable = init_movable
-	self._position = Vector2i.ZERO
+	self._position = Vector2.ZERO
 	super(bodypack, Callable(self, "_input_mapper"), Callable(self, "_output_mapper"))
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,7 +61,7 @@ func set_movable(movable := true):
 
 # (writing)
 ## Move this object by given displacement.
-func do_move(displacement := Vector2i.ZERO):
+func do_move(displacement := Vector2.ZERO):
 	if self._movable:
 		self._position += displacement
 
