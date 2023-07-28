@@ -22,7 +22,7 @@ var _permitted := []
 # (private)
 # The input mapper for bodypack data.
 func _input_mapper(pair):
-	if pair[KEY] in self._permitted:
+	if pair[KEY] in self._permitted and pair[VALUE] is Vector2:
 		return [pair[KEY], pair[VALUE] - self._position]
 	else:
 		return []

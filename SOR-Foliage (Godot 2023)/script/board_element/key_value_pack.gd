@@ -164,7 +164,7 @@ func _iter_get(_arg) -> Array:
 # (static)
 # Returns true if the variant is a dictionary or an array.
 static func _variant_is_container(v) -> bool:
-	return true if v is Array or v is Dictionary else false
+	return v is Array or v is Dictionary
 
 # (static)
 # Returns true if the pack is a key-value pair.
@@ -174,33 +174,18 @@ static func _pack_is_kvpair(pack) -> bool:
 	return not _variant_is_container(pack[VALUE])
 
 # (static)
-# Returns true if the pack is a valid array pack.
-static func _pack_is_arpack(pack) -> bool:
-	if not pack is Array: return false
-	return pack.all(func(e): return _pack_is_kvpair(e))
-
-# (static)
-# Returns true if the pack is a valid dictionary pack.
-static func _pack_is_dipack(pack) -> bool:
-	if not pack is Dictionary: return false
-	for k in pack:
-		if pack[k] is Dictionary: return false
-		if pack[k] is Array:
-			if pack[k].any(func(e): return _variant_is_container(e)): return false
-	return true
-
-# (static)
-# Returns true if the pack is a key-value pack.
-static func _pack_is_kvpack(pack) -> bool:
-	return pack is KeyValuePack
-
-# (static)
 # Returns the type in KeyValuePack.PackType of given pack.
 static func _pack_get_packtype(pack) -> int:
 	if _pack_is_kvpair(pack): return PackType.KVPAIR
-	if _pack_is_arpack(pack): return PackType.ARPACK
-	if _pack_is_dipack(pack): return PackType.DIPACK
-	if _pack_is_kvpack(pack): return PackType.KVPACK
+	if pack is Array:
+		if pack.all(func(e): return _pack_is_kvpair(e)): return PackType.ARPACK
+	if pack is Dictionary:
+		for k in pack:
+			if pack[k] is Dictionary: return PackType.INVALID
+			if pack[k] is Array:
+				if pack[k].any(func(e): return _variant_is_container(e)): return PackType.INVALID
+		return PackType.DIPACK
+	if pack is KeyValuePack: return PackType.KVPACK
 	return PackType.INVALID
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -247,7 +232,7 @@ static func _dict_delete_kvpair(dict: Dictionary, kvpair) -> void:
 
 # (static)
 ## Call [param method] for every pair in [param pack].
-## [br]The default returning logic is equivalent to "any", which is to return [code]true[/code]
+## [br]The default logic of returning is equivalent to "any", which is to return [code]true[/code]
 ## if any [code]true[/code] is returned during iteration, else [code]false[/code]:
 ## [codeblock]
 ## init_r = false
@@ -268,7 +253,7 @@ static func pack_iterator(pack,
 				r = next_r.call(r, method.call(pair))
 		PackType.DIPACK:
 			for k in pack:
-				if _variant_is_container(pack[k]):
+				if pack[k] is Array:
 					for v in pack[k]:
 						r = next_r.call(r, method.call([k, v]))
 				else:
