@@ -36,7 +36,7 @@ func _output_mapper(pair):
 # The constructor of this class when instantiating.
 func _init(bodypack = {}, init_movable := true, init_permitted := []):
 	self._permitted = init_permitted if init_permitted else \
-			KeyValuePack.pack_to_dict(bodypack).keys()
+			KeyValuePack.new(bodypack).to_dict().keys()
 	self._permitted.make_read_only()
 	self._movable = init_movable
 	self._position = Vector2.ZERO
@@ -48,11 +48,6 @@ func _init(bodypack = {}, init_movable := true, init_permitted := []):
 ## Returns [code]true[/code] if this object is movable.
 func is_movable() -> bool:
 	return self._movable
-
-# (read-only)
-## Returns an array of all objects bound with this object when moving.
-func get_bound() -> Array:
-	return self._bound
 
 # (writing)
 ## Set movability to given state.
