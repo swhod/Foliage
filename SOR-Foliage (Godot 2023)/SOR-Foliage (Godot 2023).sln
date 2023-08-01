@@ -1,0 +1,19 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SOR-Foliage (Godot 2023)", "SOR-Foliage (Godot 2023).csproj", "{497F2FFD-3057-41A8-8327-F6A12CF50832}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	Debug|Any CPU = Debug|Any CPU
+	ExportDebug|Any CPU = ExportDebug|Any CPU
+	ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{497F2FFD-3057-41A8-8327-F6A12CF50832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{497F2FFD-3057-41A8-8327-F6A12CF50832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{497F2FFD-3057-41A8-8327-F6A12CF50832}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{497F2FFD-3057-41A8-8327-F6A12CF50832}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{497F2FFD-3057-41A8-8327-F6A12CF50832}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{497F2FFD-3057-41A8-8327-F6A12CF50832}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -11,8 +11,16 @@ config_version=5
 [application]
 
 config/name="SOR-Foliage (Godot 2023)"
-config/features=PackedStringArray("4.0", "Mobile")
+config/features=PackedStringArray("4.1", "C#", "Mobile")
 config/icon="res://icon.svg"
+
+[dotnet]
+
+project/assembly_name="SOR-Foliage (Godot 2023)"
+
+[filesystem]
+
+import/blender/enabled=false
 
 [input]
 
