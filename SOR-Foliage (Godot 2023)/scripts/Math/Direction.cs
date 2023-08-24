@@ -1,5 +1,8 @@
 namespace Foliage.Math;
 
+/// <summary>
+/// Enumerates four basic directions.
+/// </summary>
 public enum Direction
 {
     Right   = 1 << 0,

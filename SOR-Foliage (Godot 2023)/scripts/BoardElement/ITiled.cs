@@ -1,21 +1,17 @@
-using Foliage.Math;
+using Vector2 = System.Numerics.Vector2;
 using System.Collections.Generic;
 
 namespace Foliage.BoardElement;
 
-/// <summary>
-/// The common interface of tiled objects.
-/// </summary>
-public interface ITiled
+public interface ITiled<T>
 {
     /// <summary>
-    /// The dictionary mapping all coordinates of occupied tiles
-    /// to certain tiled objects.
+    /// Maps all coordinates of occupied tiles to objects in given type T.
     /// </summary>
-    Dictionary<PlanarVector, IElement> Tiles { get; set; }
+    Dictionary<Vector2, T> Tiles { get; set; }
 
     /// <summary>
     /// The offset from the tile grid.
     /// </summary>
-    PlanarVector Offset { get; set; }
+    Vector2 Offset { get; set; }
 }
