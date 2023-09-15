@@ -1,8 +1,5 @@
 namespace Foliage.Math;
 
-/// <summary>
-/// Enumerates four basic directions.
-/// </summary>
 [System.Flags]
 public enum Directions: int
 {
