@@ -9,62 +9,43 @@ namespace Foliage.Board.Base;
 public class BodyData
 {
     /// <summary>
-    /// Collects all the bodies. 
-    /// Each is expressed as a position with corresponding functionality.
+    /// Collects all the positions.
     /// </summary>
-    public IReadOnlyDictionary<Vector2, IFunctional> Bodies 
-        => (IReadOnlyDictionary<Vector2, IFunctional>)_bodies;
+    public IReadOnlyCollection<Vector2> Positions => _positions;
     /// <summary>
     /// Represents the offset from aligned with tile grid.
     /// </summary>
     public Vector2 Offset => _offset;
 
-    public event NotifyCollectionChangedEventHandler BodiesChanged
+    public event NotifyCollectionChangedEventHandler PositionsChanged
     {
-        add => _bodies.CollectionChanged += value;
-        remove => _bodies.CollectionChanged -= value;
+        add => _positions.CollectionChanged += value;
+        remove => _positions.CollectionChanged -= value;
     }
-    public void AssignBody(Vector2 position, IFunctional functionality)
-        => _bodies.Add(new KeyValuePair<Vector2, IFunctional>(Floor(position), functionality));
-    public void RemoveBody(Vector2 position, IFunctional functionality)
-        => _bodies.Remove(new KeyValuePair<Vector2, IFunctional>(position, functionality));
-    public void RemoveBody(Vector2 position)
-    {
-        foreach(KeyValuePair<Vector2, IFunctional> body in _bodies)
-        {
-            if (body.Key == position) _bodies.Remove(body);
-        }
-    }
-    public void RemoveBody(IFunctional functionality)
-    {
-        foreach(KeyValuePair<Vector2, IFunctional> body in _bodies)
-        {
-            if (body.Value == functionality) _bodies.Remove(body);
-        }
-    }
+
+    public void AddPosition(Vector2 position)
+        => _positions.Add(Floor(position));
+    public void RemovePosition(Vector2 position)
+        => _positions.Remove(Floor(position));
     public void Move(Vector2 distance)
     {
         _offset += distance;
-        while (_offset.X < OffsetMin)
-            ShiftOffset(Directions.Right);
-        while (_offset.Y < OffsetMin)
-            ShiftOffset(Directions.Down);
-        while (_offset.X >= OffsetMax)
-            ShiftOffset(Directions.Left);
-        while (_offset.Y >= OffsetMax)
-            ShiftOffset(Directions.Up);
+        while (_offset.X <  OffsetMin) ShiftOffset(Directions.Right);
+        while (_offset.Y <  OffsetMin) ShiftOffset(Directions.Down);
+        while (_offset.X >= OffsetMax) ShiftOffset(Directions.Left);
+        while (_offset.Y >= OffsetMax) ShiftOffset(Directions.Up);
     }
 
-    private ObservableCollection<KeyValuePair<Vector2, IFunctional>> _bodies { get; }
+    private ObservableCollection<Vector2> _positions { get; }
     private Vector2 _offset = Vector2.Zero;
     private void ShiftOffset(Directions shiftDirection)
     {
         Vector2 shiftVector = shiftDirection.DirectionsToVector2();
         _offset += shiftVector;
-        foreach (KeyValuePair<Vector2, IFunctional> body in _bodies)
+        foreach (Vector2 position in _positions)
         {
-            _bodies.Remove(body);
-            _bodies.Add(new KeyValuePair<Vector2, IFunctional>(body.Key + -shiftVector, body.Value));
+            RemovePosition(position);
+            AddPosition(position - shiftVector);
         }
     }
 

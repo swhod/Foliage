@@ -41,11 +41,10 @@ public class BoardData
         }
         foreach(IStructural structure in e.OldItems)
         {
-            foreach(KeyValuePair<Vector2, IFunctional> tile 
-                    in structure.OwningBody.Bodies)
+            foreach(Vector2 position 
+                    in structure.OwningBody.Positions)
             {
-                Vector2 position = tile.Key;
-                structure.OwningBody.BodiesChanged -= _updates[structure];
+                structure.OwningBody.PositionsChanged -= _updates[structure];
                 _updates.Remove(structure);
                 _tiles[position].Remove(structure);
                 if (_tiles[position].Count == 0) _tiles.Remove(position);
@@ -53,14 +52,13 @@ public class BoardData
         }
         foreach(IStructural structure in e.NewItems)
         {
-            foreach(KeyValuePair<Vector2, IFunctional> tile
-                    in structure.OwningBody.Bodies)
+            foreach(Vector2 position
+                    in structure.OwningBody.Positions)
             {
-                Vector2 position = tile.Key;
                 if (_tiles.ContainsKey(position)) _tiles[position] = new();
                 _tiles[position].Add(structure);
                 _updates[structure] = (sender, e) => Update(structure, sender, e);
-                structure.OwningBody.BodiesChanged += _updates[structure];
+                structure.OwningBody.PositionsChanged += _updates[structure];
             }
         }
     }
@@ -76,15 +74,13 @@ public class BoardData
                     in _tiles) tile.Value.Remove(structure);
             return;
         }
-        foreach(KeyValuePair<Vector2, IFunctional> body in e.OldItems)
+        foreach(Vector2 position in e.OldItems)
         {
-            Vector2 position = body.Key;
             _tiles[position].Remove(structure);
             if (_tiles[position].Count == 0) _tiles.Remove(position);
         }
-        foreach(KeyValuePair<Vector2, IFunctional> body in e.NewItems)
+        foreach(Vector2 position in e.NewItems)
         {
-            Vector2 position = body.Key;
             if (_tiles.ContainsKey(position)) _tiles[position] = new();
             _tiles[position].Add(structure);
         }
