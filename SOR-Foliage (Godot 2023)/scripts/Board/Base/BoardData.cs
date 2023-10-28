@@ -44,6 +44,7 @@ public class BoardData
             foreach(Vector2 position 
                     in structure.OwningBody.Positions)
             {
+                structure.OwningBody.Unlink();
                 structure.OwningBody.PositionsChanged -= _updates[structure];
                 _updates.Remove(structure);
                 _tiles[position].Remove(structure);
@@ -59,6 +60,7 @@ public class BoardData
                 _tiles[position].Add(structure);
                 _updates[structure] = (sender, e) => Update(structure, sender, e);
                 structure.OwningBody.PositionsChanged += _updates[structure];
+                structure.OwningBody.LinkWith(this);
             }
         }
     }
