@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ce0auj8h7o7ur"]
+
+[ext_resource type="Texture2D" uid="uid://kj0ma2i5706k" path="res://assets/leaf.png" id="1_qqump"]
+
+[node name="PlantLeaf" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_qqump")

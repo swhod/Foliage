@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dhcrib6pk6y4h"]
+
+[ext_resource type="Texture2D" uid="uid://j5rct77rarwt" path="res://assets/nuri facing right.png" id="1_2mh8m"]
+
+[node name="Nuri" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_2mh8m")

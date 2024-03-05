@@ -11,12 +11,24 @@ config_version=5
 [application]
 
 config/name="Foliage Demo"
-config/features=PackedStringArray("4.2", "Mobile")
+config/features=PackedStringArray("4.2", "C#", "Mobile")
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=512
+window/size/viewport_height=288
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="viewport"
 
 [dotnet]
 
 project/assembly_name="Foliage Demo"
+
+[filesystem]
+
+import/blender/enabled=false
 
 [rendering]
 

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3utlng72qlxv"]
+
+[ext_resource type="Texture2D" uid="uid://cqlktdbfeqaws" path="res://assets/earthbrick.png" id="1_d11gh"]
+
+[node name="EarthBrick" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_d11gh")

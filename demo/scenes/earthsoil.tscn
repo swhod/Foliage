@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://melo4n2b7c4o"]
+
+[ext_resource type="Texture2D" uid="uid://bv6ucroyu1dba" path="res://assets/earthsoil.png" id="1_qokph"]
+
+[node name="EarthSoil" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_qokph")
