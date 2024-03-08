@@ -5,4 +5,6 @@
 [node name="EarthSoil" type="Node2D"]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visibility_layer = 4
 texture = ExtResource("1_qokph")
+centered = false

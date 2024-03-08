@@ -5,4 +5,6 @@
 [node name="PlantRoot" type="Node2D"]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visibility_layer = 8
 texture = ExtResource("1_18r5m")
+centered = false

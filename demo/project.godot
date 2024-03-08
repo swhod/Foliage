@@ -30,6 +30,16 @@ project/assembly_name="Foliage Demo"
 
 import/blender/enabled=false
 
+[layer_names]
+
+2d_render/layer_1="Background"
+2d_render/layer_2="Brick"
+2d_render/layer_3="Glyph"
+2d_render/layer_4="Item"
+2d_render/layer_5="Creature"
+2d_render/layer_6="Maincharacter"
+2d_render/layer_7="Foreground"
+
 [rendering]
 
 renderer/rendering_method="mobile"

@@ -5,4 +5,6 @@
 [node name="EarthBrick" type="Node2D"]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visibility_layer = 2
 texture = ExtResource("1_d11gh")
+centered = false
